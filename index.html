@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人 TTRPG - 冒險與機制系統</title>
+    <!-- Google Fonts for premium RPG feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for beautiful icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app-wrapper">
+        <!-- BACKGROUND AMBIENCE -->
+        <div class="particles-container"></div>
+        <div class="glow-bg"></div>
+
+        <!-- 1. SETUP SCREEN -->
+        <div id="setup-screen" class="screen-panel active">
+            <h1 class="game-title">TTRPG 虛空之主</h1>
+            <p class="game-subtitle">地圖生成與極致機制模擬器</p>
+            
+            <div class="setup-card glass-panel" style="max-height: 80vh; overflow-y: auto; text-align: left; padding: 25px;">
+                <div class="setup-section">
+                    <h3>選擇玩家人數</h3>
+                    <div class="player-count-selector">
+                        <button class="btn-count active" data-count="2">2 人</button>
+                        <button class="btn-count" data-count="3">3 人</button>
+                        <button class="btn-count" data-count="4">4 人</button>
+                    </div>
+                </div>
+
+                <div id="player-config-list" class="setup-section">
+                    <!-- Config entries generated via JS -->
+                </div>
+
+                <!-- MAP GENERATION SETUP OPTIONS (§1.8) -->
+                <div class="setup-section" style="border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <h3>地圖版本</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-map-version active" data-version="standard" style="flex:1; padding:10px; background:#0f172a; border:1px solid var(--border-color); color:var(--color-text-main);">標準版 (90格)</button>
+                        <button class="btn-map-version" data-version="full" style="flex:1; padding:10px; background:#0f172a; border:1px solid var(--border-color); color:var(--color-text-muted);">完整版 (120格)</button>
+                    </div>
+                </div>
+
+                <div class="setup-section">
+                    <h3>地圖風格</h3>
+                    <select id="map-style-select" style="width:100%; padding:10px; background:#0f172a; border:1px solid var(--border-color); color:white; border-radius:4px;">
+                        <option value="parchment">古地圖羊皮紙風 (推薦)</option>
+                        <option value="pixel">像素點陣風</option>
+                        <option value="dark">暗黑地下城風</option>
+                        <option value="fantasy">清新奇幻風</option>
+                    </select>
+                </div>
+
+                <div class="setup-section">
+                    <h3>地形類型 (可複選)</h3>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; color: white;">
+                        <label><input type="checkbox" class="terrain-checkbox" value="森林" checked> 森林</label>
+                        <label><input type="checkbox" class="terrain-checkbox" value="沙漠" checked> 沙漠</label>
+                        <label><input type="checkbox" class="terrain-checkbox" value="雪山" checked> 雪山</label>
+                        <label><input type="checkbox" class="terrain-checkbox" value="沼澤" checked> 沼澤</label>
+                        <label><input type="checkbox" class="terrain-checkbox" value="火山" checked> 火山</label>
+                        <label><input type="checkbox" class="terrain-checkbox" value="海岸"> 海岸</label>
+                    </div>
+                </div>
+
+                <div class="setup-section">
+                    <h3>地圖難度</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-difficulty" data-diff="easy" style="flex:1; padding:10px; background:#0f172a; border:1px solid var(--border-color); color:var(--color-text-muted);">簡單 (捷徑多)</button>
+                        <button class="btn-difficulty active" data-diff="normal" style="flex:1; padding:10px; background:#0f172a; border:1px solid var(--border-color); color:white;">標準 (普通)</button>
+                        <button class="btn-difficulty" data-diff="hard" style="flex:1; padding:10px; background:#0f172a; border:1px solid var(--border-color); color:var(--color-text-muted);">困難 (陷阱多)</button>
+                    </div>
+                </div>
+
+                <div class="setup-section">
+                    <h3>終點類型</h3>
+                    <select id="end-type-select" style="width:100%; padding:10px; background:#0f172a; border:1px solid var(--border-color); color:white; border-radius:4px;">
+                        <option value="castle">古城堡</option>
+                        <option value="volcano">火山口</option>
+                        <option value="abyss">深淵入口</option>
+                        <option value="temple">天空神殿</option>
+                    </select>
+                </div>
+
+                <button id="btn-start-game" class="btn-primary-glow btn-large">
+                    <span class="btn-text"><i class="fa-solid fa-dice-d20"></i> 開始生成地圖並出發</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. MAIN GAME SCREEN -->
+        <div id="game-screen" class="screen-panel">
+            <!-- HEADER -->
+            <header class="game-header">
+                <div class="logo-area">
+                    <h2 class="brand-title">混沌深淵</h2>
+                </div>
+                <div class="game-status-bar">
+                    <div class="status-item">
+                        <span class="label">回合數:</span>
+                        <span id="turn-counter" class="value">1</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">時間:</span>
+                        <span id="day-night-indicator" class="value"><i class="fa-solid fa-sun"></i> 第 1 天 白天</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">當前玩家:</span>
+                        <span id="active-player-banner" class="value">Player 1</span>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button id="btn-save-game" class="btn-secondary" title="儲存進度"><i class="fa-solid fa-floppy-disk"></i> 存檔</button>
+                    <button id="btn-load-game" class="btn-secondary" title="載入進度"><i class="fa-solid fa-folder-open"></i> 讀檔</button>
+                    <button id="btn-gm-mode" class="btn-secondary" title="GM模式 (顯示陷阱)"><i class="fa-solid fa-eye-slash"></i> 顯示陷阱</button>
+                </div>
+            </header>
+
+            <!-- PLAYFIELD CONTAINER -->
+            <div class="playfield">
+                <!-- BOARD AREA -->
+                <div class="board-container glass-panel">
+                    <div id="game-board" class="board-grid">
+                        <!-- Grid cells (8x8 = 64 cells) generated via JS -->
+                    </div>
+                </div>
+
+                <!-- SIDE PANEL (PLAYER INFO & ACTIONS) -->
+                <aside class="sidebar-container">
+                    <!-- PLAYER STATUS CARD -->
+                    <div class="player-status-card glass-panel" id="active-player-card">
+                        <div class="player-card-header">
+                            <div class="avatar-ring" id="player-avatar-indicator">
+                                <span class="avatar-char">P1</span>
+                            </div>
+                            <div class="player-identity">
+                                <h3 id="player-name-display">冒險者 1</h3>
+                                <span class="player-class-tag" id="player-vp-display">勝利點數: 0 VP</span>
+                            </div>
+                        </div>
+
+                        <div class="status-bars">
+                            <!-- HP Bar -->
+                            <div class="stat-bar-group">
+                                <div class="stat-bar-label">
+                                    <span>生命值 (HP)</span>
+                                    <span id="player-hp-text">20 / 20</span>
+                                </div>
+                                <div class="progress-bar-bg hp-bar">
+                                    <div class="progress-fill" id="player-hp-fill" style="width: 100%"></div>
+                                </div>
+                            </div>
+                            <!-- MP Bar -->
+                            <div class="stat-bar-group">
+                                <div class="stat-bar-label">
+                                    <span>魔力值 (MP)</span>
+                                    <span id="player-mp-text">0 / 0</span>
+                                </div>
+                                <div class="progress-bar-bg mp-bar">
+                                    <div class="progress-fill" id="player-mp-fill" style="width: 100%; background: var(--blue2)"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- STATS ROW -->
+                        <div class="stats-row">
+                            <div class="stat-box">
+                                <i class="fa-solid fa-coins gold-text"></i>
+                                <span class="stat-val" id="player-coins-display">$15</span>
+                                <span class="stat-lbl">金幣</span>
+                            </div>
+                            <div class="stat-box">
+                                <i class="fa-solid fa-skull-crossbones red-text"></i>
+                                <span class="stat-val" id="player-buff-display">無</span>
+                                <span class="stat-lbl">Boss增傷</span>
+                            </div>
+                            <div class="stat-box">
+                                <i class="fa-solid fa-shield-halved blue-text"></i>
+                                <span class="stat-val" id="player-traps-count-display">0/2</span>
+                                <span class="stat-lbl">已設陷阱</span>
+                            </div>
+                        </div>
+
+                        <!-- TABS: INVENTORY / MATERIALS -->
+                        <div class="panel-tabs">
+                            <button class="tab-btn active" data-tab="tab-inventory">道具欄</button>
+                            <button class="tab-btn" data-tab="tab-materials">素材包</button>
+                        </div>
+
+                        <!-- TAB CONTENTS -->
+                        <div class="tab-container">
+                            <!-- Inventory Tab -->
+                            <div id="tab-inventory" class="tab-content active">
+                                <ul class="item-list" id="player-inventory-list">
+                                    <!-- Items generated dynamically -->
+                                    <li class="empty-list-msg">空空如也</li>
+                                </ul>
+                            </div>
+                            <!-- Materials Tab -->
+                            <div id="tab-materials" class="tab-content">
+                                <div class="materials-grid" id="player-materials-grid">
+                                    <!-- Materials generated dynamically -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CLASS EXCLUSIVE SKILLS PANEL (§4) -->
+                        <div class="class-skills-panel" style="margin-bottom:15px; border-top:1px dashed var(--border-color); padding-top:10px;">
+                            <h4 style="font-size:0.85rem; color:var(--color-gold); font-family:var(--font-header); letter-spacing:1px; margin-bottom:8px;">職業專屬動作 / 技能</h4>
+                            <div id="skills-buttons-container" style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                                <!-- Skills buttons generated dynamically by class -->
+                            </div>
+                        </div>
+
+                        <!-- ACTIONS CONSOLE -->
+                        <div class="action-console">
+                            <button id="btn-roll-move" class="btn-primary-glow">
+                                <i class="fa-solid fa-dice"></i> 擲骰移動
+                            </button>
+                            <div class="action-btn-row">
+                                <button id="btn-action-craft" class="btn-action-tile" disabled>
+                                    <i class="fa-solid fa-hammer"></i> 進行合成
+                                </button>
+                                <button id="btn-action-shop" class="btn-action-tile" disabled>
+                                    <i class="fa-solid fa-store"></i> 交易商店
+                                </button>
+                            </div>
+                            <button id="btn-end-turn" class="btn-secondary" disabled>結束回合</button>
+                        </div>
+                    </div>
+
+                    <!-- GAME LOG / CONSOLE -->
+                    <div class="game-log-panel glass-panel">
+                        <div class="panel-header">
+                            <h4>戰報日誌</h4>
+                            <button id="btn-clear-log" class="btn-text-action">清除</button>
+                        </div>
+                        <div class="log-messages" id="log-messages-container">
+                            <!-- Logs will stream here -->
+                            <div class="log-entry system"><i class="fa-solid fa-circle-info"></i> 混沌深淵已就緒，請擲骰開始移動。</div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- DICE ROLLER PANEL (FIXED BOTTOM TRAY) -->
+            <footer class="dice-roller-tray glass-panel">
+                <div class="dice-selector-section">
+                    <h4>骰子面板 (點擊加入骰盤)</h4>
+                    <div class="dice-buttons">
+                        <button class="btn-die" data-sides="4">D4</button>
+                        <button class="btn-die" data-sides="6">D6</button>
+                        <button class="btn-die" data-sides="8">D8</button>
+                        <button class="btn-die" data-sides="10">D10</button>
+                        <button class="btn-die" data-sides="12">D12</button>
+                        <button class="btn-die" data-sides="20">D20</button>
+                    </div>
+                </div>
+
+                <div class="dice-pool-section">
+                    <div class="pool-header">
+                        <span>待擲骰盤:</span>
+                        <button id="btn-clear-pool" class="btn-text-action">清空</button>
+                    </div>
+                    <div id="selected-dice-pool" class="selected-dice-pool">
+                        <!-- Clicked dice show up here -->
+                        <span class="pool-empty">請點選上方骰子</span>
+                    </div>
+                </div>
+
+                <div class="dice-roll-action">
+                    <button id="btn-trigger-roll" class="btn-roll-gold" disabled>
+                        <i class="fa-solid fa-dice-d20"></i> Roll!
+                    </button>
+                </div>
+
+                <div class="dice-result-showcase">
+                    <div class="result-label">擲骰結果</div>
+                    <div class="result-number" id="dice-total-display">-</div>
+                    <div class="result-breakdown" id="dice-breakdown-display">請選擇骰子並按下 Roll!</div>
+                </div>
+            </footer>
+        </div>
+
+        <!-- 3. MODAL DIALOGS -->
+
+        <!-- A. COMBAT MODAL -->
+        <div id="modal-combat" class="modal-overlay">
+            <div class="modal-card combat-card glass-panel">
+                <h2 class="combat-title"><i class="fa-solid fa-hand-fist"></i> 遭遇戰鬥！</h2>
+                
+                <div class="combat-arena">
+                    <!-- Player Arena Side -->
+                    <div class="combat-side player-side">
+                        <div class="avatar-ring large" id="combat-player-avatar">P1</div>
+                        <h3 id="combat-player-name">冒險者</h3>
+                        <div class="progress-bar-bg hp-bar">
+                            <div class="progress-fill" id="combat-player-hp-fill" style="width: 100%"></div>
+                        </div>
+                        <span id="combat-player-hp-text">20 / 20 HP</span>
+                        <div class="combat-modifiers" id="combat-player-mods">
+                            <span id="combat-player-atk" class="stat-tag atk"><i class="fa-solid fa-hand-fist"></i> ATK: 2d6</span>
+                            <span id="combat-player-def" class="stat-tag def"><i class="fa-solid fa-shield-halved"></i> DEF: 0</span>
+                        </div>
+                    </div>
+
+                    <div class="combat-vs">VS</div>
+
+                    <!-- Monster Arena Side -->
+                    <div class="combat-side monster-side">
+                        <div class="monster-illustration-container">
+                            <img id="combat-monster-img" class="monster-img" src="" alt="Monster">
+                        </div>
+                        <h3 id="combat-monster-name">凶暴哥布林</h3>
+                        <div class="progress-bar-bg hp-bar">
+                            <div class="progress-fill" id="combat-monster-hp-fill" style="width: 100%"></div>
+                        </div>
+                        <span id="combat-monster-hp-text">10 / 10 HP</span>
+                        <div class="combat-modifiers" id="combat-monster-mods">
+                            <span id="combat-monster-atk" class="stat-tag atk"><i class="fa-solid fa-hand-fist"></i> ATK: 1d6</span>
+                            <span id="combat-monster-def" class="stat-tag def"><i class="fa-solid fa-shield-halved"></i> DEF: 0</span>
+                        </div>
+                        <span class="monster-level-tag" id="combat-monster-level">中級怪</span>
+                    </div>
+                </div>
+
+                <div class="combat-console">
+                    <div class="combat-prompt" id="combat-prompt-text">你的回合！點擊判定攻擊進行結算。</div>
+                    
+                    <!-- Combat skills area (§4) -->
+                    <div class="combat-skills-row" id="combat-active-skills" style="display:flex; justify-content:center; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+                        <!-- Skill buttons dynamically populated -->
+                    </div>
+
+                    <!-- Allied assist area (§3.3) -->
+                    <div class="combat-allies-assist" id="combat-ally-panel" style="background:rgba(0,0,0,0.3); border:1px dashed var(--border-color); padding:10px; border-radius:6px; margin-bottom:10px; display:none; text-align:left;">
+                        <span style="font-size:0.8rem; color:var(--color-gold); font-weight:700;">邀請盟友進行戰力輔助：</span>
+                        <div style="display:flex; gap:8px; align-items:center; margin-top:5px;">
+                            <select id="combat-select-ally" style="padding:6px; background:#0f172a; border:1px solid var(--border-color); color:white; font-size:0.8rem;">
+                                <!-- alive allies -->
+                            </select>
+                            <select id="combat-select-ally-action" style="padding:6px; background:#0f172a; border:1px solid var(--border-color); color:white; font-size:0.8rem;">
+                                <option value="attack">普通攻擊 (25%傷害計入)</option>
+                                <option value="skill">技能攻擊 (35%傷害計入)</option>
+                                <option value="heal">聖光治癒 (100%等效價值)</option>
+                                <option value="item">道具輔助 (50%等效價值)</option>
+                            </select>
+                            <button id="btn-combat-invite-ally" class="btn-secondary" style="font-size:0.8rem; padding:6px 12px;">邀請輔助</button>
+                        </div>
+                    </div>
+
+                    <div class="combat-action-bar">
+                        <button id="btn-combat-attack" class="btn-primary-glow btn-large" style="flex:2;">
+                            <i class="fa-solid fa-hand-fist"></i> 進行判定攻擊
+                        </button>
+                        <button id="btn-combat-flee" class="btn-secondary" style="flex:1;">
+                            <i class="fa-solid fa-person-running"></i> 逃跑 (需擲 D6 >= 4)
+                        </button>
+                    </div>
+                    <div class="combat-log" id="combat-log-container">
+                        <!-- Combat log logs -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- B. SHOP MODAL -->
+        <div id="modal-shop" class="modal-overlay">
+            <div class="modal-card glass-panel">
+                <div class="modal-header">
+                    <h2><i class="fa-solid fa-store gold-text"></i> 深淵補給商店</h2>
+                    <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                
+                <div class="shop-layout">
+                    <!-- Buy Area -->
+                    <div class="shop-section">
+                        <h3>購買道具</h3>
+                        <div class="shop-items-grid" id="shop-buy-list">
+                            <!-- Items to buy -->
+                        </div>
+                    </div>
+
+                    <!-- Sell Area -->
+                    <div class="shop-section">
+                        <h3>出售素材</h3>
+                        <p class="section-hint">你可以將收集到的素材出售換取金幣：</p>
+                        <div class="shop-sell-grid" id="shop-sell-list">
+                            <!-- Materials to sell -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <div class="footer-coins">你的金幣: <span id="shop-player-coins" class="gold-text">$15</span></div>
+                    <button class="btn-primary btn-close-modal">離開商店</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- C. SYNTHESIS MODAL -->
+        <div id="modal-synthesis" class="modal-overlay">
+            <div class="modal-card glass-panel recipes-card">
+                <div class="modal-header">
+                    <h2><i class="fa-solid fa-hammer purple-text"></i> 素材合成台</h2>
+                    <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <div class="synthesis-layout">
+                    <div class="recipes-tabs">
+                        <button class="recipe-tab active" data-level="low">低等素材合成</button>
+                        <button class="recipe-tab" data-level="mid">中等素材合成</button>
+                        <button class="recipe-tab" data-level="high">高等素材合成</button>
+                    </div>
+
+                    <div class="recipes-container" id="recipes-list-container">
+                        <!-- Recipes list generated via JS -->
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <span class="synthesis-hint"><i class="fa-solid fa-circle-question"></i> 合成不會消耗行動回合，需滿足素材要求。</span>
+                    <button class="btn-primary btn-close-modal">關閉合成</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- D. FATE CARD MODAL -->
+        <div id="modal-fate" class="modal-overlay">
+            <div class="modal-card fate-card glass-panel">
+                <h2><i class="fa-solid fa-wand-magic-sparkles purple-text"></i> 抽取命運卡片</h2>
+                
+                <div class="card-draw-area">
+                    <div class="fate-card-element" id="fate-card-draw">
+                        <div class="card-back">
+                            <div class="card-seal"><i class="fa-solid fa-dice-d20"></i></div>
+                            <span class="card-draw-prompt">點擊抽取</span>
+                        </div>
+                        <div class="card-front">
+                            <h3 id="fate-card-title">命運之輪</h3>
+                            <div class="card-illustration" id="fate-card-illustration">
+                                <i class="fa-solid fa-question text-huge"></i>
+                            </div>
+                            <p id="fate-card-desc">命運未卜...</p>
+                            
+                            <!-- Check Challenge Panel -->
+                            <div class="card-challenge-panel" id="fate-challenge-panel" style="display: none;">
+                                <div class="challenge-goal" id="fate-challenge-goal">擲骰挑戰: 擲出 12 到 20 視為成功</div>
+                                <button id="btn-fate-challenge-roll" class="btn-roll-gold">
+                                    <i class="fa-solid fa-dice-d20"></i> 擲 D20 判定
+                                </button>
+                                <div class="challenge-result" id="fate-challenge-result"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="display: none;" id="fate-modal-footer">
+                    <button id="btn-close-fate" class="btn-primary">接受命運</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- E. TRAP PLACEMENT MODAL -->
+        <div id="modal-trap" class="modal-overlay">
+            <div class="modal-card glass-panel">
+                <div class="modal-header">
+                    <h2><i class="fa-solid fa-shield-halved red-text"></i> 秘密設置陷阱</h2>
+                    <button class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                
+                <div class="trap-placement-content">
+                    <p>請選擇你想要在當前格子設置的陷阱（最多同時設置 2 個，踩中對你自己無效）：</p>
+                    <div class="trap-options-grid" id="trap-options-list">
+                        <!-- Trap options from inventory -->
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <span class="trap-hint"><i class="fa-solid fa-eye-slash"></i> 設置成功後，格子對其他玩家不可見。</span>
+                    <button class="btn-secondary btn-close-modal">取消</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- F. GAME OVER MODAL -->
+        <div id="modal-gameover" class="modal-overlay">
+            <div class="modal-card gameover-card glass-panel">
+                <h1 class="victory-header"><i class="fa-solid fa-trophy gold-text"></i> 冒險結算</h1>
+                <h2 id="gameover-reason">最終 Boss 已被擊敗！</h2>
+                
+                <div class="leaderboard-section">
+                    <h3>勝利點數排行榜 (VP Leaderboard)</h3>
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>排名</th>
+                                <th>冒險者</th>
+                                <th>勝利點數 (VP)</th>
+                                <th>持有金幣</th>
+                                <th>剩餘生命</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-body">
+                            <!-- Leaderboard list -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="victory-details">
+                    <h3 class="winner-announcement" id="winner-announcement-text">Player 1 獲得最終勝利！</h3>
+                </div>
+
+                <div class="modal-footer">
+                    <button id="btn-restart-game" class="btn-primary-glow btn-large">重啟冒險</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- G. DYING STRUGGLE MODAL (§3.6) -->
+        <div id="modal-dying" class="modal-overlay">
+            <div class="modal-card glass-panel" style="max-width: 420px; text-align: center; padding: 25px;">
+                <h2 style="font-family:var(--font-header);"><i class="fa-solid fa-skull-crossbones red-text"></i> 瀕死掙扎狀態</h2>
+                <p style="font-size:0.9rem; color:var(--color-text-muted); margin-bottom:15px; line-height:1.4;">
+                    您的生命值歸零，每回合將扣除 5% 最大 HP 流血傷。連續 3 次復活擲骰失敗或失血過多將導致永久出局死亡！
+                </p>
+                <div style="background:#0f172a; border:1px solid var(--border-color); padding:15px; margin-bottom:15px; border-radius:6px; display:flex; flex-direction:column; gap:6px;">
+                    <div style="font-size:1.1rem; font-weight:700; color:white;" id="dying-stats-fail">連續失敗次數: 0 / 3</div>
+                    <div style="font-size:0.9rem; color:var(--color-text-muted);" id="dying-stats-threshold">正常復活要求: D20 >= 11</div>
+                </div>
+                
+                <div style="margin-bottom:15px; text-align:left; border-top:1px dashed var(--border-color); padding-top:12px;">
+                    <label style="color:var(--color-gold); font-weight:700; font-size:0.85rem; display:block; margin-bottom:6px;">使用瀕死專用道具：</label>
+                    <div style="display:flex; gap:8px;">
+                        <select id="dying-item-select" style="flex:1; padding:8px; background:#0f172a; border:1px solid var(--border-color); color:white; border-radius:4px; font-size:0.85rem;">
+                            <!-- bandaged, life spring, death talisman -->
+                        </select>
+                        <button id="btn-use-dying-item" class="btn-secondary" style="font-size:0.85rem; padding:8px 12px;">使用</button>
+                    </div>
+                </div>
+                
+                <button id="btn-dying-struggle-roll" class="btn-primary-glow btn-large">
+                    <i class="fa-solid fa-dice-d20"></i> D20 復活擲骰判定
+                </button>
+            </div>
+        </div>
+
+        <!-- H. TELEPORT BET MODAL (§1.6) -->
+        <div id="modal-teleport" class="modal-overlay">
+            <div class="modal-card glass-panel" style="max-width: 440px; text-align: center; padding: 25px;">
+                <h2 style="font-family:var(--font-header);"><i class="fa-solid fa-door-open blue-text"></i> 傳送門判定</h2>
+                <p id="teleport-prompt-text" style="font-size:0.9rem; color:var(--color-text-muted); margin-bottom:15px;">
+                    您已踏上傳送格！將擲 D20 決定目的地（短程或長程傳送）。
+                </p>
+                
+                <div class="teleport-bet-section" style="background:#0f172a; border:1px solid var(--border-color); padding:15px; margin-bottom:15px; border-radius:6px; text-align:left;">
+                    <h4 style="color:var(--color-gold); font-size:0.9rem; font-family:var(--font-header); margin-bottom:8px;"><i class="fa-solid fa-gavel"></i> 啟動傳送賭注 (選擇性)</h4>
+                    <p style="font-size:0.75rem; color:var(--color-text-muted); margin-bottom:10px; line-height:1.3;">指定一種骰子及數字猜測。擲出對應數字前進格數或道具獎勵，猜錯承受扣金幣或跳回處罰。</p>
+                    <div style="display:flex; gap:8px; margin-bottom:8px;">
+                        <select id="teleport-bet-dice" style="flex:1; padding:8px; background:#1e293b; border:1px solid var(--border-color); color:white; font-size:0.85rem;">
+                            <option value="4">D4 (猜中+2格 / 錯下回速-1)</option>
+                            <option value="6">D6 (猜中+3格或$5 / 錯扣$3)</option>
+                            <option value="8">D8 (猜中+4格或$8 / 錯扣$5退1格)</option>
+                            <option value="10">D10 (猜中+5格或$10物 / 錯扣$8跳回)</option>
+                            <option value="12">D12 (猜中+6格或$15物 / 錯扣$10跳且慢)</option>
+                            <option value="20">D20 (猜中+8格或$30物 / 錯扣$15跳兩退2)</option>
+                        </select>
+                        <input type="number" id="teleport-bet-num" min="1" max="4" value="1" style="width:70px; padding:8px; background:#1e293b; border:1px solid var(--border-color); color:white; text-align:center; border-radius:4px; font-weight:700;">
+                    </div>
+                    <button id="btn-place-teleport-bet" class="btn-secondary" style="width:100%; font-size:0.85rem; padding:8px;">鎖定傳送賭注</button>
+                    <div id="teleport-bet-status" style="margin-top:6px; font-size:0.85rem; font-weight:700; color:var(--color-emerald); display:none; text-align:center;">✓ 賭注已鎖定！</div>
+                </div>
+
+                <button id="btn-trigger-teleport-roll" class="btn-primary-glow btn-large">
+                    <i class="fa-solid fa-dice-d20"></i> D20 傳送門啟動！
+                </button>
+            </div>
+        </div>
+
+        <!-- I. CARD AUCTION MODAL (§2.4) -->
+        <div id="modal-auction" class="modal-overlay">
+            <div class="modal-card glass-panel" style="max-width: 400px; text-align: center; padding: 25px;">
+                <h2 style="font-family:var(--font-header);"><i class="fa-solid fa-gavel gold-text"></i> 死亡玩家遺留卡片拍賣會</h2>
+                <p style="font-size:0.85rem; color:var(--color-text-muted); margin-bottom:15px;">剩餘活著的玩家依序出價競標死亡玩家的卡片，出價高者獲得卡片！</p>
+                <div style="background:#0f172a; border:1px solid var(--border-color); padding:15px; margin-bottom:15px; border-radius:6px; text-align:left;">
+                    <h3 id="auction-card-title" style="color:var(--color-gold); text-align:center; font-family:var(--font-header); margin-bottom:8px;">拍賣品卡片</h3>
+                    <p id="auction-card-desc" style="font-size:0.85rem; color:white; line-height:1.4; min-height:45px;">卡片效果描述</p>
+                </div>
+                <div style="background:#1e293b; border:1px solid var(--border-color); padding:10px; margin-bottom:15px; border-radius:6px; display:flex; flex-direction:column; gap:4px; font-size:0.9rem;">
+                    <div style="font-weight:700; color:var(--color-gold);" id="auction-current-bid">當前最高出價: $0</div>
+                    <div style="color:white;" id="auction-next-bidder">當前出價順位: 玩家 1</div>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button id="btn-auction-pass" class="btn-secondary" style="flex:1; padding:10px; font-size:0.85rem;">放棄出價 (Pass)</button>
+                    <div style="display:flex; flex:1; gap:4px;">
+                        <input type="number" id="auction-bid-amount" min="1" value="1" style="width:70px; background:#0f172a; border:1px solid var(--border-color); color:white; text-align:center; border-radius:4px; font-weight:700;">
+                        <button id="btn-auction-bid" class="btn-primary" style="flex:1; font-size:0.85rem; padding:8px;">確認出價</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MAIN GAME LOGIC (browser-only, no server needed) -->
+    <script src="game-config.js"></script>
+    <script src="game-engine.js"></script>
+    <script src="ai-agent.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

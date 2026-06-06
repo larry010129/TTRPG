@@ -1,0 +1,198 @@
+{
+    "players": [
+        {
+            "id": 1,
+            "name": "冒險者 1",
+            "color": "#ef4444",
+            "class": "戰士",
+            "hp": 120,
+            "maxHp": 120,
+            "mp": 0,
+            "maxMp": 0,
+            "atk": "2d8",
+            "def": 10,
+            "spd": 3,
+            "coins": 30,
+            "victoryPoints": 0,
+            "inventory": [],
+            "materials": {
+                "獸皮碎片": 0,
+                "普通骨頭": 0,
+                "野草萃取液": 0,
+                "粗糙礦石": 0,
+                "腐木碎片": 0,
+                "精製獸皮": 0,
+                "魔法骨髓": 0,
+                "濃縮草藥精": 0,
+                "精煉礦晶": 0,
+                "古樹樹脂": 1,
+                "熔岩晶核": 0,
+                "蛇女眼淚": 0,
+                "龍族鱗片": 1,
+                "星界碎片": 0,
+                "深淵核心": 0,
+                "時間碎片": 0,
+                "暗影精華": 0,
+                "霜巨魔之心": 0
+            },
+            "position": 4,
+            "isDead": false,
+            "isDying": false,
+            "statusEffects": [],
+            "skipTurns": 0,
+            "reviveFailCount": 0,
+            "activeTrapsCount": 0,
+            "damageBuff": false
+        },
+        {
+            "id": 2,
+            "name": "冒險者 2",
+            "color": "#3b82f6",
+            "class": "白魔法師",
+            "hp": 85,
+            "maxHp": 85,
+            "mp": 20,
+            "maxMp": 20,
+            "atk": "2d6",
+            "def": 5,
+            "spd": 4,
+            "coins": 20,
+            "victoryPoints": 0,
+            "inventory": [],
+            "materials": {
+                "獸皮碎片": 0,
+                "普通骨頭": 0,
+                "野草萃取液": 0,
+                "粗糙礦石": 0,
+                "腐木碎片": 0,
+                "精製獸皮": 0,
+                "魔法骨髓": 0,
+                "濃縮草藥精": 0,
+                "精煉礦晶": 0,
+                "古樹樹脂": 0,
+                "熔岩晶核": 0,
+                "蛇女眼淚": 0,
+                "龍族鱗片": 0,
+                "星界碎片": 0,
+                "深淵核心": 0,
+                "時間碎片": 0,
+                "暗影精華": 0,
+                "霜巨魔之心": 0
+            },
+            "position": 0,
+            "isDead": false,
+            "isDying": false,
+            "statusEffects": [],
+            "skipTurns": 0,
+            "reviveFailCount": 0,
+            "activeTrapsCount": 0,
+            "damageBuff": false
+        },
+        {
+            "id": 3,
+            "name": "冒險者 3",
+            "color": "#10b981",
+            "class": "火炮海盜",
+            "hp": 90,
+            "maxHp": 90,
+            "mp": 0,
+            "maxMp": 0,
+            "atk": "4d8",
+            "def": 6,
+            "spd": 4,
+            "coins": 20,
+            "victoryPoints": 0,
+            "inventory": [],
+            "materials": {
+                "獸皮碎片": 0,
+                "普通骨頭": 0,
+                "野草萃取液": 0,
+                "粗糙礦石": 0,
+                "腐木碎片": 0,
+                "精製獸皮": 0,
+                "魔法骨髓": 0,
+                "濃縮草藥精": 0,
+                "精煉礦晶": 0,
+                "古樹樹脂": 0,
+                "熔岩晶核": 0,
+                "蛇女眼淚": 0,
+                "龍族鱗片": 0,
+                "星界碎片": 0,
+                "深淵核心": 0,
+                "時間碎片": 0,
+                "暗影精華": 0,
+                "霜巨魔之心": 0
+            },
+            "position": 0,
+            "isDead": false,
+            "isDying": false,
+            "statusEffects": [],
+            "skipTurns": 0,
+            "reviveFailCount": 0,
+            "activeTrapsCount": 0,
+            "damageBuff": false
+        }
+    ],
+    "activePlayerIndex": 0,
+    "turnCount": 1,
+    "day": 1,
+    "isDay": true,
+    "roundInDay": 0,
+    "traps": [],
+    "boss": {
+        "name": "虛空之主・無名者",
+        "hp": 666,
+        "maxHp": 666,
+        "atk": "4d12",
+        "def": 15,
+        "phases": [
+            {
+                "name": "第一階段",
+                "hpRange": [
+                    401,
+                    666
+                ],
+                "desc": "標準攻擊模式"
+            },
+            {
+                "name": "第二階段",
+                "hpRange": [
+                    151,
+                    400
+                ],
+                "desc": "解鎖時間逆流特技"
+            },
+            {
+                "name": "終焉形態",
+                "hpRange": [
+                    0,
+                    150
+                ],
+                "desc": "攻擊×1.5；每回合全體1d6"
+            }
+        ],
+        "dealtDamagePlayers": []
+    },
+    "turnState": "action",
+    "activeCombat": null,
+    "activeFate": null,
+    "logMessages": [
+        {
+            "text": "冒險開始！輪到 冒險者 1 的回合。請擲骰移動！",
+            "type": "system",
+            "turn": 1
+        },
+        {
+            "text": "冒險者 1 擲出了 D6 = 4，移動至第 4 格。【寶箱】",
+            "type": "roll-log",
+            "turn": 1
+        },
+        {
+            "text": "【開箱結果】D20 擲出 18！打開了【神聖寶箱】，獲得 $10 金幣和素材: ['龍族鱗片', '古樹樹脂']。",
+            "type": "roll-log",
+            "turn": 1
+        }
+    ],
+    "gmMode": false,
+    "currentOccupiedTrapTile": null
+}
